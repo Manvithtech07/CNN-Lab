@@ -6,7 +6,7 @@ A comprehensive deep learning repository focused on Convolutional Neural Network
 
 ## Projects
 
-1. CNN Visualization Tool
+1. CNN Toolbox
    - Interactive visualization of convolution operations and convolution neural network training.
 <img width="1894" height="820" alt="image" src="https://github.com/user-attachments/assets/200c74c9-aaf0-4f62-868f-78f4babf6092" />
 <img width="1894" height="819" alt="image" src="https://github.com/user-attachments/assets/09fb8de2-ef77-4de1-9d20-826ce8848eae" />
