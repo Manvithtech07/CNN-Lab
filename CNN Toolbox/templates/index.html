@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNN Toolbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Chakra+Petch:wght@300;400;600;700&family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:        #ffffff;
+  --surface:   #f4f6f9;
+  --surface2:  #eaecf0;
+  --border:    #d0d5dd;
+  --border2:   #c4cad4;
+  --blue:      #1d6fa4;
+  --blue-dark: #145380;
+  --pink:      #c41c6b;
+  --violet:    #6a1fc2;
+  --amber:     #b45309;
+  --green:     #1a7c6e;
+  --text:      #111827;
+  --muted:     #4b5563;
+  --font-h:    'Bebas Neue', sans-serif;
+  --font-ui:   'Chakra Petch', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-body: 'Barlow', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px 12px;
+  border-bottom: 2px solid var(--border);
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.logo { display: flex; align-items: baseline; gap: 12px; }
+.logo h1 { font-family: var(--font-h); font-size: 1.85rem; letter-spacing: 4px; color: var(--blue-dark); }
+.header-right { text-align: right; }
+.by-line { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); display: block; }
+.sub-line { font-family: var(--font-mono); font-size: 0.6rem; color: var(--border2); display: block; margin-top: 2px; }
+
+.tab-bar {
+  display: flex;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.tab-btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  padding: 13px 26px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--blue-dark); border-bottom-color: var(--blue-dark); }
+
+.tab-panel { display: none; padding: 26px 32px; animation: fadeIn .2s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.grid-2 { display: grid; grid-template-columns: 330px 1fr; gap: 22px; }
+.flex-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 18px 20px;
+}
+.panel-title {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--blue-dark);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.section-divider { width: 100%; height: 1px; background: var(--border); margin: 16px 0; }
+
+label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+  margin-top: 13px;
+}
+label:first-child { margin-top: 0; }
+
+select, input[type="number"], input[type="file"] {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: #ffffff;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+select:focus, input[type="number"]:focus { border-color: var(--blue); }
+select option { background: #ffffff; color: var(--text); }
+
+input[type="range"] {
+  width: 100%;
+  height: 5px;
+  background: var(--border2);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  accent-color: var(--blue);
+  padding: 0;
+}
+
+.val-badge {
+  float: right;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--blue-dark);
+  background: rgba(29,111,164,0.08);
+  border: 1px solid rgba(29,111,164,0.2);
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 11px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  width: 100%;
+  margin-top: 16px;
+}
+.btn-primary { background: var(--blue-dark); color: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.btn-primary:hover { background: var(--blue); }
+.btn-violet { background: var(--violet); color: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.btn-violet:hover { background: #7d2be0; }
+.btn-pink { background: var(--pink); color: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.btn-pink:hover { background: #a01559; }
+.btn-sm { padding: 6px 13px; width: auto; margin-top: 0; font-size: 0.7rem; }
+.btn-outline {
+  background: #ffffff;
+  color: var(--blue-dark);
+  border: 1px solid var(--blue-dark);
+  box-shadow: none;
+}
+.btn-outline:hover { background: var(--surface); }
+
+.source-tabs { display: flex; border: 1px solid var(--border2); border-radius: 5px; overflow: hidden; }
+.src-tab {
+  flex: 1; text-align: center; padding: 8px 5px;
+  font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+  color: var(--muted); background: #ffffff; border: none; transition: all .12s;
+}
+.src-tab.active { color: #ffffff; background: var(--blue-dark); }
+.src-tab:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+.class-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.chip {
+  font-family: var(--font-mono); font-size: 0.7rem; padding: 3px 9px;
+  border-radius: 3px; cursor: pointer; border: 1px solid var(--border2);
+  color: var(--muted); background: #ffffff; transition: all .1s;
+}
+.chip.selected { border-color: var(--blue-dark); color: var(--blue-dark); background: rgba(29,111,164,0.07); }
+
+.sample-preview {
+  width: 100%; height: 86px;
+  border: 1px dashed var(--border2); border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem;
+  background: #ffffff; overflow: hidden;
+}
+.sample-preview img { image-rendering: pixelated; max-height: 78px; }
+
+.img-card {
+  flex: 1; text-align: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 13px;
+}
+.img-card h4 {
+  font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 9px;
+}
+.img-card img {
+  max-width: 100%; border: 1px solid var(--border2); border-radius: 3px;
+  image-rendering: pixelated; display: block; margin: 0 auto;
+}
+.shape-tag {
+  margin-top: 7px; font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--blue-dark); background: rgba(29,111,164,0.07);
+  border: 1px solid rgba(29,111,164,0.15); border-radius: 3px;
+  padding: 2px 7px; display: inline-block;
+}
+
+.matrix-wrap { background: #ffffff; border: 1px solid var(--border2); border-radius: 5px; padding: 10px; margin-top: 6px; }
+.matrix-grid { display: grid; gap: 4px; justify-content: center; }
+.matrix-input {
+  width: 44px; height: 30px; text-align: center;
+  font-family: var(--font-mono); font-size: 0.72rem;
+  background: #ffffff; border: 1px solid var(--border2);
+  color: var(--text); border-radius: 3px; outline: none; transition: border-color .12s;
+}
+.matrix-input:focus { border-color: var(--blue); }
+
+.math-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 18px; margin-top: 20px;
+}
+.math-box-title { font-family: var(--font-h); font-size: 1.1rem; letter-spacing: 2.5px; color: var(--blue-dark); text-align: center; margin-bottom: 4px; }
+.math-box-sub { text-align: center; color: var(--muted); font-size: 0.78rem; margin-bottom: 14px; }
+.math-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.math-col-label { font-family: var(--font-ui); font-size: 0.64rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: center; margin-bottom: 4px; }
+.math-table { border-collapse: collapse; }
+.math-table td { border: 1px solid var(--border2); padding: 6px 8px; font-family: var(--font-mono); font-size: 0.75rem; text-align: center; color: var(--text); background: #ffffff; }
+.math-op { font-size: 1.3rem; font-weight: 700; color: var(--muted); }
+.math-sum { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; color: var(--pink); }
+
+.stats-bar {
+  display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 14px;
+  background: rgba(29,111,164,0.05); border: 1px solid rgba(29,111,164,0.15);
+  border-radius: 6px; margin-bottom: 16px;
+}
+.stat-item { font-family: var(--font-mono); font-size: 0.76rem; color: var(--text); }
+.stat-item strong { color: var(--blue-dark); }
+
+.progress-wrap { margin: 12px 0; }
+.progress-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+.progress-bar { height: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--violet)); transition: width .35s ease; border-radius: 3px; }
+
+.epoch-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin: 14px 0; }
+.epoch-card { background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 10px 8px; text-align: center; }
+.epoch-card .ec-label { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.epoch-card .ec-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
+.ec-tl { color: var(--pink) !important; }
+.ec-vl { color: var(--amber) !important; }
+.ec-ta { color: var(--blue-dark) !important; }
+.ec-va { color: var(--green) !important; }
+
+.status-msg { font-family: var(--font-mono); font-size: 0.72rem; color: var(--amber); margin-top: 7px; min-height: 17px; }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+.chart-box { background: #ffffff; border: 1px solid var(--border); border-radius: 7px; padding: 14px; }
+.chart-box h4 { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+.pred-label { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 9px; }
+.pred-row { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.pred-name { font-family: var(--font-mono); font-size: 0.7rem; width: 95px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.pred-bar-wrap { flex: 1; height: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+.pred-bar-fill { height: 100%; border-radius: 2px; transition: width .45s ease; }
+.pred-pct { font-family: var(--font-mono); font-size: 0.66rem; width: 40px; text-align: right; color: var(--muted); }
+
+
+.info-box {
+  background: rgba(180,83,9,0.06); border: 1px solid rgba(180,83,9,0.2);
+  border-radius: 6px; padding: 11px 15px;
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--amber);
+}
+.success-box {
+  background: rgba(26,124,110,0.06); border: 1px solid rgba(26,124,110,0.2);
+  border-radius: 6px; padding: 11px 15px;
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--green);
+}
+
+
+
+
+#arch-canvas { width: 100%; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); }
+
+
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.spinner {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--border2); border-top-color: var(--blue);
+  animation: spin .65s linear infinite; display: inline-block;
+  vertical-align: middle; margin-right: 7px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+.placeholder-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 140px; color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem;
+  border: 1px dashed var(--border2); border-radius: 7px; margin-top: 14px; gap: 7px;
+  background: var(--surface);
+}
+.placeholder-icon { font-family: var(--font-mono); color: var(--border2); letter-spacing: -2px; font-size: 1.4rem; }
+
+.pred-result-img {
+  width: 80px; height: 80px; image-rendering: pixelated;
+  border: 2px solid var(--border); border-radius: 4px; display: block;
+}
+.pred-class-badge {
+  display: inline-block; margin-top: 5px;
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: #ffffff; background: var(--pink);
+  padding: 2px 10px; border-radius: 3px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><h1>CNN TOOLBOX</h1></div>
+  <div class="header-right">
+    <h3>Manvith S Rao</h3>
+  </div>
+</header>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('conv')" id="tabBtn-conv">Convolution Lab</button>
+  <button class="tab-btn" onclick="switchTab('nn')"   id="tabBtn-nn">Neural Network</button>
+</nav>
+
+
+<!-- TAB 1 - CONVOLUTION LAB -->
+<div class="tab-panel active" id="panel-conv">
+  <form method="POST" enctype="multipart/form-data" id="convForm">
+    <input type="hidden" name="image_b64_data" id="image_b64_data">
+    <div class="grid-2">
+      <div>
+        <div class="panel" style="margin-bottom: 16px;">
+          <div class="panel-title">Image Source</div>
+          <div class="source-tabs">
+            <button type="button" class="src-tab active" id="ds-upload" onclick="selectDatasetSource('upload')">Upload</button>
+            <button type="button" class="src-tab" id="ds-mnist"   onclick="selectDatasetSource('mnist')">MNIST</button>
+            <button type="button" class="src-tab" id="ds-fashion" onclick="selectDatasetSource('fashion')">Fashion</button>
+          </div>
+          <input type="hidden" name="dataset_source" id="dataset_source_input" value="upload">
+          <div id="upload-panel" style="margin-top: 10px;">
+            <label>Image file</label>
+            <input type="file" name="file" id="file-input" accept="image/*" onchange="previewUpload(this)">
+            <div id="upload-preview" class="sample-preview" style="margin-top: 7px;"><span>no file selected</span></div>
+          </div>
+          <div id="mnist-panel" class="hidden" style="margin-top: 10px;">
+            <label id="class-picker-label">Select digit</label>
+            <div class="class-chips" id="class-chips-conv"></div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="loadMnistSample()">Load sample</button>
+              <span id="conv-sample-class" style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--amber);"></span>
+            </div>
+            <div class="sample-preview" id="mnist-preview" style="margin-top: 8px;"><span>click load sample above</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Convolution Settings</div>
+          <label>Filter type</label>
+          <select name="filter_type" id="filter_type" onchange="updateMatrixGrid()">
+            <option value="random"    {% if params.filter_type == 'random'    %}selected{% endif %}>Random (zero-mean)</option>
+            <option value="sobel"     {% if params.filter_type == 'sobel'     %}selected{% endif %}>Sobel - Vertical edges</option>
+            <option value="roberts"   {% if params.filter_type == 'roberts'   %}selected{% endif %}>Roberts Cross</option>
+            <option value="laplacian" {% if params.filter_type == 'laplacian' %}selected{% endif %}>Laplacian - All edges</option>
+            <option value="prewitt"   {% if params.filter_type == 'prewitt'   %}selected{% endif %}>Prewitt - Horizontal</option>
+            <option value="sharpen"   {% if params.filter_type == 'sharpen'   %}selected{% endif %}>Sharpen</option>
+            <option value="blur"      {% if params.filter_type == 'blur'      %}selected{% endif %}>Gaussian Blur</option>
+            <option value="manual"    {% if params.filter_type == 'manual'    %}selected{% endif %}>Manual input</option>
+          </select>
+          <label>Kernel weights</label>
+          <div class="matrix-wrap"><div id="matrix_grid" class="matrix-grid"></div></div>
+          <label>Kernel size (K): <span class="val-badge" id="k-val">{{ params.kernel_size }}</span></label>
+          <input type="range" name="kernel_size" id="kernel_size_input" min="1" max="7" step="2" value="{{ params.kernel_size }}"
+                 oninput="document.getElementById('k-val').innerText = this.value; if(document.getElementById('filter_type').value === 'manual') updateMatrixGrid();">
+          <label>Stride (S): <span class="val-badge" id="s-val">{{ params.stride }}</span></label>
+          <input type="range" name="stride" min="1" max="4" value="{{ params.stride }}"
+                 oninput="document.getElementById('s-val').innerText = this.value">
+          <label>Padding (P): <span class="val-badge" id="p-val">{{ params.padding }}</span></label>
+          <input type="range" name="padding" min="0" max="4" value="{{ params.padding }}"
+                 oninput="document.getElementById('p-val').innerText = this.value">
+          <label>Activation function</label>
+          <select name="activation">
+            <option value="none">None</option>
+            <option value="relu"    {% if params.activation == 'relu'    %}selected{% endif %}>ReLU</option>
+            <option value="sigmoid" {% if params.activation == 'sigmoid' %}selected{% endif %}>Sigmoid</option>
+            <option value="tanh"    {% if params.activation == 'tanh'    %}selected{% endif %}>Tanh</option>
+          </select>
+          <label>Pooling</label>
+          <select name="pooling">
+            <option value="none">None</option>
+            <option value="max" {% if params.pooling == 'max' %}selected{% endif %}>Max pooling (2x2)</option>
+            <option value="avg" {% if params.pooling == 'avg' %}selected{% endif %}>Average pooling (2x2)</option>
+          </select>
+          <button type="submit" class="btn btn-primary">Run Convolution</button>
+        </div>
+      </div>
+
+      <div>
+        {% if in_shape != "N/A" %}
+        <div class="stats-bar">
+          <div class="stat-item"><strong>Input</strong> {{ in_shape }}</div>
+          <div class="stat-item" style="color: var(--border2);">--&gt;</div>
+          <div class="stat-item"><strong>Output</strong> {{ out_shape }}</div>
+        </div>
+        {% endif %}
+        <div class="flex-row">
+          {% if input_img %}
+          <div class="img-card">
+            <h4>Input</h4>
+            <img src="data:image/png;base64,{{ input_img }}" style="max-height: 200px;">
+            <div class="shape-tag">{{ in_shape }}</div>
+          </div>
+          {% endif %}
+          {% if output_img %}
+          <div class="img-card">
+            <h4>Feature map</h4>
+            <img src="data:image/png;base64,{{ output_img }}" style="max-height: 200px;">
+            <div class="shape-tag">{{ out_shape }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if not input_img %}
+        <div class="placeholder-box">
+          <span class="placeholder-icon">[ img ]</span>
+          <span>select an image source and run convolution</span>
+          <span style="color: var(--border2); font-size: 0.65rem;">configure settings on the left panel</span>
+        </div>
+        {% endif %}
+        {% if math_step %}
+        <div class="math-box">
+          <div class="math-box-title">Convolution Arithmetic</div>
+          <div class="math-box-sub">Top-left image patch &times; filter weights, element-wise</div>
+          <div class="math-row">
+            <div>
+              <div class="math-col-label">Image patch</div>
+              <table class="math-table">{% for row in math_step.patch %}<tr>{% for v in row %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</table>
+            </div>
+            <span class="math-op">&times;</span>
+            <div>
+              <div class="math-col-label">Filter</div>
+              <table class="math-table">{% for row in math_step.weights %}<tr>{% for v in row %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</table>
+            </div>
+            <span class="math-op">=</span>
+            <div>
+              <div class="math-col-label">Product</div>
+              <table class="math-table">{% for row in math_step.product %}<tr>{% for v in row %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</table>
+            </div>
+            <span class="math-op">-&gt; &Sigma; =</span>
+            <span class="math-sum">{{ math_step.sum }}</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+
+
+<!-- TAB 2 - NEURAL NETWORK -->
+<div class="tab-panel" id="panel-nn">
+  <div class="grid-2">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Training Configuration</div>
+        <label>Dataset</label>
+        <select id="nn-dataset">
+          <option value="mnist">MNIST - Handwritten Digits</option>
+          <option value="fashion">Fashion MNIST - Clothing</option>
+        </select>
+        <label>Epochs: <span class="val-badge" id="ep-val">8</span></label>
+        <input type="range" id="nn-epochs" min="1" max="20" value="8"
+               oninput="document.getElementById('ep-val').innerText = this.value">
+        <label>Learning rate: <span class="val-badge" id="lr-val">0.001</span></label>
+        <select id="nn-lr" onchange="document.getElementById('lr-val').innerText = this.value">
+          <option value="0.01">0.01</option>
+          <option value="0.001" selected>0.001</option>
+          <option value="0.0005">0.0005</option>
+          <option value="0.0001">0.0001</option>
+        </select>
+        <label>Batch size: <span class="val-badge" id="bs-val">64</span></label>
+        <input type="range" id="nn-batch" min="16" max="256" step="16" value="64"
+               oninput="document.getElementById('bs-val').innerText = this.value">
+        <button class="btn btn-violet" onclick="startTraining()" id="train-btn">Start Training</button>
+        <div class="status-msg" id="train-status"></div>
+      </div>
+
+      <div class="panel" style="margin-top: 16px;">
+        <div class="panel-title">Model Architecture</div>
+        <canvas id="arch-canvas" height="210"></canvas>
+        <div style="font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); margin-top: 8px; text-align: center;">
+          Conv1(16) &rarr; Pool &rarr; Conv2(32) &rarr; Pool &rarr; FC(128) &rarr; 10 classes
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-title">Training Progress</div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span id="prog-label">Epoch 0 / 0</span>
+            <span id="prog-pct">0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width: 0%"></div></div>
+        </div>
+        <div class="epoch-grid">
+          <div class="epoch-card"><div class="ec-label">Train Loss</div><div class="ec-val ec-tl" id="ec-tl">--</div></div>
+          <div class="epoch-card"><div class="ec-label">Val Loss</div>  <div class="ec-val ec-vl" id="ec-vl">--</div></div>
+          <div class="epoch-card"><div class="ec-label">Train Acc</div> <div class="ec-val ec-ta" id="ec-ta">--</div></div>
+          <div class="epoch-card"><div class="ec-label">Val Acc</div>   <div class="ec-val ec-va" id="ec-va">--</div></div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-box"><h4>Loss</h4><canvas id="loss-chart"></canvas></div>
+          <div class="chart-box"><h4>Accuracy</h4><canvas id="acc-chart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Post-training results -->
+      <div id="nn-results" class="hidden">
+
+        <!-- Test on new image -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-title">Test on New Image</div>
+          <div class="source-tabs" style="margin-bottom: 10px;">
+            <button type="button" class="src-tab active" id="pt-mnist"   onclick="selectPredSource('mnist')">MNIST</button>
+            <button type="button" class="src-tab" id="pt-fashion" onclick="selectPredSource('fashion')">Fashion</button>
+            <button type="button" class="src-tab" id="pt-upload"  onclick="selectPredSource('upload')">Upload</button>
+          </div>
+
+          <div id="pt-mnist-panel">
+            <label id="pt-class-label">Select digit</label>
+            <div class="class-chips" id="pt-class-chips"></div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="loadPredSample()">Load sample</button>
+            <div class="sample-preview" id="pt-sample-preview" style="margin-top: 8px;"><span>click load sample above</span></div>
+          </div>
+
+          <div id="pt-upload-panel" class="hidden" style="margin-top: 10px;">
+            <label>Image file (any size, auto-resized to 28x28)</label>
+            <input type="file" id="pt-upload-input" accept="image/*" onchange="ptPreviewUpload(this)">
+            <div class="sample-preview" id="pt-upload-preview" style="margin-top: 7px;"><span>no file selected</span></div>
+          </div>
+
+          <button class="btn btn-outline" onclick="runPrediction()" id="pred-btn" style="margin-top: 12px;">Run Prediction</button>
+          <div class="status-msg" id="pred-status"></div>
+
+          <div id="pred-result" class="hidden" style="margin-top: 14px;">
+            <div style="display: flex; gap: 16px; align-items: flex-start;">
+              <div style="text-align: center;">
+                <img id="pred-result-img" src="" class="pred-result-img">
+                <div id="pred-class-badge" class="pred-class-badge"></div>
+              </div>
+              <div style="flex: 1;">
+                <div class="pred-label">Confidence</div>
+                <div id="pred-bars-new"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div><!-- /nn-results -->
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+const PRESETS = {
+  sobel:     { k: 3, w: [1,0,-1, 2,0,-2, 1,0,-1] },
+  roberts:   { k: 2, w: [1,0, 0,-1] },
+  laplacian: { k: 3, w: [0,1,0, 1,-4,1, 0,1,0] },
+  prewitt:   { k: 3, w: [-1,-1,-1, 0,0,0, 1,1,1] },
+  sharpen:   { k: 3, w: [0,-1,0, -1,5,-1, 0,-1,0] },
+  blur:      { k: 3, w: [1/9,1/9,1/9, 1/9,1/9,1/9, 1/9,1/9,1/9] }
+};
+
+
+function updateMatrixGrid() {
+  const type   = document.getElementById('filter_type').value;
+  const kInput = document.getElementById('kernel_size_input');
+  const kDisp  = document.getElementById('k-val');
+  let weights  = [];
+  let kSize    = parseInt(kInput.value);
+
+  if (type === 'random') {
+    let tmp = [], sum = 0;
+    for (let i = 0; i < kSize * kSize; i++) { let v = Math.random()*2-1; tmp.push(v); sum += v; }
+    let mean = sum / (kSize * kSize);
+    weights = tmp.map(v => (v - mean).toFixed(3));
+  } else if (PRESETS[type]) {
+    weights = PRESETS[type].w;
+    kSize   = PRESETS[type].k;
+    kInput.value    = kSize;
+    kDisp.innerText = kSize;
+  }
+
+  const grid = document.getElementById('matrix_grid');
+  const existingVals = Array.from(grid.querySelectorAll('.matrix-input')).map(i => i.value);
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${kSize}, 1fr)`;
+
+  for (let i = 0; i < kSize * kSize; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.step = 'any'; inp.name = `w${i}`; inp.className = 'matrix-input';
+    if (weights.length > 0 && weights[i] !== undefined) inp.value = weights[i];
+    else if (type === 'manual' && existingVals[i] !== undefined) inp.value = existingVals[i];
+    else inp.value = 0;
+    grid.appendChild(inp);
+  }
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('tabBtn-' + id).classList.add('active');
+  if (id === 'nn') drawArchitecture();
+}
+
+let convDatasetType   = 'upload';
+let convSelectedClass = 'random';
+
+function selectDatasetSource(type) {
+  convDatasetType = type;
+  document.getElementById('dataset_source_input').value = type;
+  ['upload','mnist','fashion'].forEach(t => document.getElementById('ds-'+t).classList.toggle('active', t===type));
+  document.getElementById('upload-panel').classList.toggle('hidden', type !== 'upload');
+  document.getElementById('mnist-panel').classList.toggle('hidden', type === 'upload');
+  if (type !== 'upload') {
+    const cn = type === 'mnist'
+      ? ['0','1','2','3','4','5','6','7','8','9']
+      : ['T-shirt','Trouser','Pullover','Dress','Coat','Sandal','Shirt','Sneaker','Bag','Ankle boot'];
+    document.getElementById('class-picker-label').innerText = type === 'mnist' ? 'Select digit' : 'Select category';
+    buildChips('class-chips-conv', cn, 'random', v => { convSelectedClass = v; });
+  }
+}
+
+function buildChips(containerId, names, selectedVal, onSelect) {
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = '';
+  const makeChip = (label, val) => {
+    const c = document.createElement('button');
+    c.type = 'button';
+    c.className = 'chip' + (val === selectedVal ? ' selected' : '');
+    c.textContent = label;
+    c.onclick = () => { cont.querySelectorAll('.chip').forEach(x => x.classList.remove('selected')); c.classList.add('selected'); onSelect(val); };
+    cont.appendChild(c);
+  };
+  makeChip('Random', 'random');
+  names.forEach((n, i) => makeChip(n, i));
+}
+
+function loadMnistSample() {
+  const ds  = convDatasetType === 'fashion' ? 'fashion' : 'mnist';
+  const cls = typeof convSelectedClass === 'number' ? convSelectedClass : 'random';
+  fetch(`/api/mnist_sample?dataset=${ds}&class_idx=${cls}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { alert(data.error); return; }
+      document.getElementById('mnist-preview').innerHTML = `<img src="data:image/png;base64,${data.image}" style="image-rendering:pixelated; max-height:76px;">`;
+      document.getElementById('conv-sample-class').innerText = 'Class: ' + data.class_name;
+      document.getElementById('image_b64_data').value = data.image;
+      document.getElementById('file-input').value = '';
+    });
+}
+
+function previewUpload(input) {
+  document.getElementById('image_b64_data').value = '';
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('upload-preview').innerHTML = `<img src="${e.target.result}" style="max-height:78px;">`; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function drawArchitecture() {
+  const cv  = document.getElementById('arch-canvas');
+  const ctx = cv.getContext('2d');
+  cv.width  = cv.offsetWidth || 580;
+  cv.height = 210;
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const layers = [
+    { label:'INPUT',   sub:'1x28x28',  color:'#1a6fa4', w:44, h:88 },
+    { label:'CONV1',   sub:'16x28x28', color:'#2563a8', w:44, h:78 },
+    { label:'POOL1',   sub:'16x14x14', color:'#2563a8', w:36, h:64 },
+    { label:'CONV2',   sub:'32x14x14', color:'#6a1fc2', w:36, h:64 },
+    { label:'POOL2',   sub:'32x7x7',   color:'#6a1fc2', w:28, h:50 },
+    { label:'FLATTEN', sub:'1568',     color:'#b45309', w:16, h:88 },
+    { label:'FC1',     sub:'128',      color:'#1a7c6e', w:16, h:68 },
+    { label:'OUT',     sub:'10',       color:'#c41c6b', w:16, h:44 },
+  ];
+
+  const gap    = 26;
+  const totalW = layers.reduce((s, l) => s + l.w, 0) + gap * (layers.length - 1);
+  let   x      = Math.floor((W - totalW) / 2);
+  const cy     = Math.floor(H / 2) + 6;
+  ctx.textAlign = 'center';
+
+  layers.forEach((lyr, i) => {
+    const lx = x + lyr.w / 2;
+    const ly = cy - lyr.h / 2;
+    if (i > 0) {
+      ctx.beginPath();
+      ctx.moveTo(x - gap + 2, cy); ctx.lineTo(x - 3, cy);
+      ctx.strokeStyle = 'rgba(75,85,99,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.fillStyle = 'rgba(75,85,99,0.5)';
+      ctx.beginPath(); ctx.moveTo(x-3,cy); ctx.lineTo(x-8,cy-3.5); ctx.lineTo(x-8,cy+3.5); ctx.fill();
+    }
+    ctx.fillStyle   = lyr.color + '18';
+    ctx.strokeStyle = lyr.color + 'cc';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, ly, lyr.w, lyr.h, 3);
+    else ctx.rect(x, ly, lyr.w, lyr.h);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = lyr.color;
+    ctx.font = '600 8.5px Chakra Petch, sans-serif';
+    ctx.fillText(lyr.label, lx, ly - 7);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '7.5px Share Tech Mono, monospace';
+    ctx.fillText(lyr.sub, lx, ly + lyr.h + 12);
+    x += lyr.w + gap;
+  });
+}
+
+let lossChart = null, accChart = null;
+
+function initCharts() {
+  const opts = {
+    responsive: true,
+    animation: { duration: 0 },
+    plugins: { legend: { labels: { color: '#4b5563', font: { family: 'Share Tech Mono', size: 10 } } } },
+    scales: {
+      x: { ticks: { color: '#4b5563', font: { size: 9 } }, grid: { color: '#d0d5dd' } },
+      y: { ticks: { color: '#4b5563', font: { size: 9 } }, grid: { color: '#d0d5dd' } }
+    }
+  };
+  if (lossChart) { lossChart.destroy(); accChart.destroy(); }
+  lossChart = new Chart(document.getElementById('loss-chart'), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label:'Train', data:[], borderColor:'#c41c6b', backgroundColor:'rgba(196,28,107,0.07)', borderWidth:2, pointRadius:2.5 },
+      { label:'Val',   data:[], borderColor:'#b45309', backgroundColor:'rgba(180,83,9,0.07)',   borderWidth:2, pointRadius:2.5 }
+    ]},
+    options: opts
+  });
+  accChart = new Chart(document.getElementById('acc-chart'), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label:'Train', data:[], borderColor:'#1d6fa4', backgroundColor:'rgba(29,111,164,0.07)', borderWidth:2, pointRadius:2.5 },
+      { label:'Val',   data:[], borderColor:'#1a7c6e', backgroundColor:'rgba(26,124,110,0.07)', borderWidth:2, pointRadius:2.5 }
+    ]},
+    options: opts
+  });
+}
+
+function updateCharts(hist) {
+  const labels = hist.train_loss.map((_, i) => 'Ep ' + (i+1));
+  lossChart.data.labels = labels;
+  lossChart.data.datasets[0].data = hist.train_loss;
+  lossChart.data.datasets[1].data = hist.val_loss;
+  lossChart.update('none');
+  accChart.data.labels = labels;
+  accChart.data.datasets[0].data = hist.train_acc;
+  accChart.data.datasets[1].data = hist.val_acc;
+  accChart.update('none');
+}
+
+function startTraining() {
+  const dataset   = document.getElementById('nn-dataset').value;
+  const epochs    = document.getElementById('nn-epochs').value;
+  const lr        = document.getElementById('nn-lr').value;
+  const batchSize = document.getElementById('nn-batch').value;
+  const btn = document.getElementById('train-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Training...';
+  document.getElementById('nn-results').classList.add('hidden');
+  document.getElementById('train-status').innerText = 'Initializing...';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').innerText = 'Epoch 0 / ' + epochs;
+  document.getElementById('prog-pct').innerText = '0%';
+  ['ec-tl','ec-vl','ec-ta','ec-va'].forEach(id => document.getElementById(id).innerText = '--');
+  initCharts();
+
+  const es = new EventSource(`/api/train_stream?dataset=${dataset}&epochs=${epochs}&lr=${lr}&batch_size=${batchSize}`);
+  es.onmessage = function(event) {
+    const d = JSON.parse(event.data);
+    if (d.type === 'status') {
+      document.getElementById('train-status').innerText = d.message;
+    } else if (d.type === 'epoch') {
+      const pct = Math.round(d.epoch / d.total * 100);
+      document.getElementById('prog-fill').style.width  = pct + '%';
+      document.getElementById('prog-label').innerText   = 'Epoch ' + d.epoch + ' / ' + d.total;
+      document.getElementById('prog-pct').innerText     = pct + '%';
+      document.getElementById('ec-tl').innerText = d.train_loss;
+      document.getElementById('ec-vl').innerText = d.val_loss;
+      document.getElementById('ec-ta').innerText = d.train_acc + '%';
+      document.getElementById('ec-va').innerText = d.val_acc   + '%';
+      document.getElementById('train-status').innerText = 'Epoch ' + d.epoch + '/' + d.total + ' complete';
+      updateCharts(d.history);
+    } else if (d.type === 'complete') {
+      es.close();
+      btn.disabled = false; btn.innerHTML = 'Start Training';
+      document.getElementById('train-status').innerText = 'Done. Val accuracy: ' + d.history.val_acc.slice(-1)[0] + '%';
+      document.getElementById('prog-fill').style.width = '100%';
+      renderNNResults(d);
+    } else if (d.type === 'error') {
+      es.close();
+      btn.disabled = false; btn.innerHTML = 'Start Training';
+      document.getElementById('train-status').innerText = 'Error: ' + d.message;
+    }
+  };
+  es.onerror = function() {
+    es.close();
+    btn.disabled = false; btn.innerHTML = 'Start Training';
+    document.getElementById('train-status').innerText = 'Connection error.';
+  };
+}
+
+let trainedDataset = 'mnist';
+let trainedClassNames = [];
+
+function renderNNResults(d) {
+  trainedDataset    = d.dataset;
+  trainedClassNames = d.class_names;
+  document.getElementById('nn-results').classList.remove('hidden');
+  document.getElementById('pred-result').classList.add('hidden');
+
+  const ptCn = d.dataset === 'mnist'
+    ? ['0','1','2','3','4','5','6','7','8','9']
+    : ['T-shirt','Trouser','Pullover','Dress','Coat','Sandal','Shirt','Sneaker','Bag','Ankle boot'];
+  document.getElementById('pt-class-label').innerText = d.dataset === 'mnist' ? 'Select digit' : 'Select category';
+  buildChips('pt-class-chips', ptCn, 'random', v => { ptSelectedClass = v; });
+}
+
+function renderPredBars(containerId, probs, classNames, predClass) {
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = '';
+  const sorted = probs.map((p, i) => ({ p, i })).sort((a, b) => b.p - a.p);
+  sorted.forEach(({ p, i }) => {
+    const pct    = (p * 100).toFixed(1);
+    const isPred = i === predClass;
+    const color  = isPred ? '#c41c6b' : (p > 0.05 ? '#1d6fa4' : '#d0d5dd');
+    cont.innerHTML += `
+      <div class="pred-row">
+        <div class="pred-name" style="${isPred ? 'color:var(--pink);font-weight:700;' : ''}">${classNames[i]}</div>
+        <div class="pred-bar-wrap"><div class="pred-bar-fill" style="width:${Math.max(p*100,0.4)}%; background:${color};"></div></div>
+        <div class="pred-pct" style="${isPred ? 'color:var(--pink);' : ''}">${pct}%</div>
+      </div>`;
+  });
+}
+
+// Predict panel
+let ptSelectedClass  = 'random';
+let ptCurrentImgB64  = null;
+let ptCurrentDataset = 'mnist';
+
+function selectPredSource(src) {
+  ['mnist','fashion','upload'].forEach(t => {
+    document.getElementById('pt-'+t).classList.toggle('active', t===src);
+  });
+  document.getElementById('pt-mnist-panel').classList.toggle('hidden',  src !== 'mnist' && src !== 'fashion');
+  document.getElementById('pt-upload-panel').classList.toggle('hidden', src !== 'upload');
+
+  if (src === 'fashion') {
+    ptCurrentDataset = 'fashion';
+    document.getElementById('pt-class-label').innerText = 'Select category';
+    buildChips('pt-class-chips',
+      ['T-shirt','Trouser','Pullover','Dress','Coat','Sandal','Shirt','Sneaker','Bag','Ankle boot'],
+      'random', v => { ptSelectedClass = v; });
+  } else if (src === 'mnist') {
+    ptCurrentDataset = 'mnist';
+    document.getElementById('pt-class-label').innerText = 'Select digit';
+    buildChips('pt-class-chips', ['0','1','2','3','4','5','6','7','8','9'],
+      'random', v => { ptSelectedClass = v; });
+  }
+}
+
+function loadPredSample() {
+  const cls = typeof ptSelectedClass === 'number' ? ptSelectedClass : 'random';
+  fetch(`/api/mnist_sample?dataset=${ptCurrentDataset}&class_idx=${cls}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { alert(data.error); return; }
+      ptCurrentImgB64 = data.image;
+      document.getElementById('pt-sample-preview').innerHTML =
+        `<img src="data:image/png;base64,${data.image}" style="image-rendering:pixelated; max-height:76px;">`;
+    });
+}
+
+function ptPreviewUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    ptCurrentImgB64 = e.target.result.split(',')[1];
+    document.getElementById('pt-upload-preview').innerHTML = `<img src="${e.target.result}" style="max-height:76px;">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function runPrediction() {
+  if (!ptCurrentImgB64) { alert('Load an image first.'); return; }
+  const btn = document.getElementById('pred-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Predicting...';
+  document.getElementById('pred-status').innerText = '';
+
+  fetch('/api/predict_single', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: ptCurrentImgB64 })
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false; btn.innerHTML = 'Run Prediction';
+    if (data.error) { document.getElementById('pred-status').innerText = 'Error: ' + data.error; return; }
+    document.getElementById('pred-result').classList.remove('hidden');
+    document.getElementById('pred-result-img').src = 'data:image/png;base64,' + data.image;
+    document.getElementById('pred-class-badge').innerText = data.pred_name;
+    renderPredBars('pred-bars-new', data.probs, data.class_names, data.pred_class);
+  })
+  .catch(err => { btn.disabled = false; btn.innerHTML = 'Run Prediction'; document.getElementById('pred-status').innerText = 'Error: ' + err.message; });
+}
+
+
+window.onload = function() {
+  updateMatrixGrid();
+  drawArchitecture();
+  initCharts();
+  window.addEventListener('resize', () => {
+    if (document.getElementById('panel-nn').classList.contains('active')) drawArchitecture();
+  });
+};
+</script>
+</body>
+</html>
