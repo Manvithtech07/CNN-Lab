@@ -16,6 +16,8 @@ A comprehensive deep learning repository focused on Convolutional Neural Network
 
 2. Waste Classification System
    - Classifies recyclable and non-recyclable waste using CNN
+<img width="1238" height="697" alt="image" src="https://github.com/user-attachments/assets/dabca21f-c22b-43fc-8c53-e37d7704c835" />
+
 
 3. Benchmark Suite
    - Performance comparison across MNIST and CIFAR-10
