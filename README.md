@@ -1,7 +1,8 @@
 # CNN-Lab
 A comprehensive deep learning repository focused on Convolutional Neural Networks (CNNs), covering:  
 - Fundamental architectures (LeNet, AlexNet, VGG, ResNet, MobileNet)
-- Dataset benchmarks (MNIST, CIFAR-10) - Real-world applications (waste classification)
+- Dataset benchmarks (MNIST, CIFAR-10)
+- Real-world applications (Recycle Waste Classification)
 - CNN visualization tools (convolution operations, feature maps) 
 
 ## Projects
@@ -15,9 +16,10 @@ A comprehensive deep learning repository focused on Convolutional Neural Network
 
 
 2. Waste Classification System
-   - Classifies recyclable and non-recyclable waste using CNN
+   - Garbage Waste Classification Using CNN And Transfer Learning (MobileNetV2)
 <img width="1238" height="697" alt="image" src="https://github.com/user-attachments/assets/dabca21f-c22b-43fc-8c53-e37d7704c835" />
 
 
-3. Benchmark Suite
-   - Performance comparison across MNIST and CIFAR-10
+3. CNN Everything
+   - Performance comparison across MNIST and CIFAR-10, Fundamental architectures (LeNet, AlexNet, VGG, ResNet, MobileNet)
+<img width="1258" height="1295" alt="eae25ef0-0129-48eb-98e2-79d01c1da9c2" src="https://github.com/user-attachments/assets/1595c02d-92fe-4381-b9ae-8d0b8f7a98e7" />
