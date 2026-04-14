@@ -18,7 +18,8 @@ A comprehensive deep learning repository focused on Convolutional Neural Network
 2. CNN Project
    - Garbage Waste Classification Using CNN And Transfer Learning (MobileNetV2)
 <img width="1238" height="697" alt="image" src="https://github.com/user-attachments/assets/dabca21f-c22b-43fc-8c53-e37d7704c835" />
-<img width="1891" height="823" alt="Screenshot 2026-04-14 112827" src="https://github.com/user-attachments/assets/e7eca2dc-c846-4ed4-a9ed-77942a2e244d" />
+<img width="1891" height="823" alt="image" src="https://github.com/user-attachments/assets/afef2163-56f7-4d7e-9074-ead7d26b110d" />
+
 
 
 
