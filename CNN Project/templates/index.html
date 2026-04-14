@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WasteAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f4f0; --surface: #ffffff; --border: #e0ded8;
+      --text: #1a1a18; --muted: #888882; --accent: #2a6b3c;
+      --accent-light: #edf4ef; --danger: #c0392b;
+    }
+    html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+    .wrapper { max-width: 800px; margin: 0 auto; padding: 52px 24px 80px; }
+    header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 52px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .site-name { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .site-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+    .status-dot { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+    .status-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+    .hero { margin-bottom: 44px; }
+    .hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 600; letter-spacing: -1px; line-height: 1.1; }
+    .hero p { margin-top: 12px; font-size: 15px; color: var(--muted); line-height: 1.65; max-width: 480px; font-weight: 400; }
+    .stats { display: flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 36px; background: var(--surface); }
+    .stat { flex: 1; padding: 18px 20px; border-right: 1px solid var(--border); text-align: center; }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: -0.5px; }
+    .stat-desc { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .upload-zone { border: 1.5px dashed var(--border); border-radius: 14px; background: var(--surface); padding: 56px 40px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; overflow: hidden; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-icon { width: 44px; height: 44px; margin: 0 auto 16px; background: var(--accent-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .upload-icon svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .upload-title { font-size: 16px; font-weight: 500; margin-bottom: 5px; }
+    .upload-sub { font-size: 13px; color: var(--muted); }
+    .upload-formats { margin-top: 20px; display: flex; gap: 6px; justify-content: center; }
+    .fmt { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 5px; color: var(--muted); }
+    #preview-section { display: none; }
+    .preview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 260px 1fr; }
+    @media (max-width: 580px) { .preview-card { grid-template-columns: 1fr; } }
+    .preview-img-wrap { position: relative; background: var(--bg); min-height: 260px; display: flex; align-items: center; justify-content: center; }
+    .preview-img-wrap img { width: 100%; height: 260px; object-fit: cover; display: block; }
+    .change-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.92); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: color 0.2s; }
+    .change-btn:hover { color: var(--text); }
+    .result-panel { padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+    .predict-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 14px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+    .predict-btn:hover { opacity: 0.88; }
+    .predict-btn:active { transform: scale(0.99); }
+    .predict-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .spinner-wrap { display: none; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    #result-box { display: none; }
+    .result-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.8px; margin-bottom: 6px; text-transform: uppercase; }
+    .result-class { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; text-transform: capitalize; color: var(--accent); line-height: 1; }
+    .result-conf { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .conf-bar-bg { width: 100%; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+    .conf-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .breakdown { margin-top: 4px; }
+    .breakdown-title { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; }
+    .top-item { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .top-name { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: capitalize; width: 76px; flex-shrink: 0; color: var(--text); }
+    .top-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .top-bar-fill { height: 100%; border-radius: 99px; width: 0; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .top-bar-fill.rank-1 { background: var(--accent); }
+    .top-bar-fill.rank-2 { background: #5a9e6f; }
+    .top-bar-fill.rank-3 { background: #a3c4ae; }
+    .top-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); width: 38px; text-align: right; flex-shrink: 0; }
+    .error-msg { background: #fdf2f2; border: 1px solid #e8c5c5; border-radius: 8px; padding: 12px 14px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--danger); display: none; }
+    footer { margin-top: 56px; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.9; }
+    .fade-in { animation: fadeUp 0.35s ease forwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <span class="site-name">WasteAI</span>
+      <span class="site-sub">Garbage Classification</span>
+      <span class="status-dot">Live</span>
+    </header>
+
+    <div class="hero">
+      <h1>Identify waste,<br>automatically.</h1>
+      <p>Upload a photo of any waste item and the model will classify it into one of 10 categories — from plastic to biological to metal.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">91%</div>
+        <div class="stat-desc">Validation Accuracy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">10</div>
+        <div class="stat-desc">Waste Classes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">13K</div>
+        <div class="stat-desc">Training Images</div>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="image/*" />
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-title">Drop an image here</div>
+      <div class="upload-sub">or click to choose a file</div>
+      <div class="upload-formats">
+        <span class="fmt">JPG</span>
+        <span class="fmt">PNG</span>
+        <span class="fmt">WEBP</span>
+      </div>
+    </div>
+
+    <div id="preview-section" style="margin-top: 24px;">
+      <div class="preview-card">
+        <div class="preview-img-wrap">
+          <img id="preview-img" src="" alt="Uploaded image" />
+          <button class="change-btn" onclick="resetAll()">Change image</button>
+        </div>
+        <div class="result-panel">
+          <button class="predict-btn" id="predict-btn" onclick="runPrediction()">Classify this image</button>
+          <div class="spinner-wrap" id="spinner">
+            <div class="spinner"></div>
+            <div class="spinner-label">Running inference...</div>
+          </div>
+          <div class="error-msg" id="error-msg"></div>
+          <div id="result-box">
+            <div class="result-label">Identified as</div>
+            <div class="result-class" id="result-class"></div>
+            <div class="result-conf" id="result-conf"></div>
+            <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-bar"></div></div>
+            <div class="breakdown" style="margin-top: 22px;">
+              <div class="breakdown-title">Top 3 Predictions</div>
+              <div id="top3-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>MobileNetV2 &middot; Transfer Learning &middot; FastAPI</div>
+      <div>Manvith S Rao &middot; CSE &middot; 251100610009</div>
+    </footer>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewSec = document.getElementById('preview-section');
+    const previewImg = document.getElementById('preview-img');
+    let currentFile = null;
+
+    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) handleFile(f);
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        previewImg.src = ev.target.result;
+        dropZone.style.display = 'none';
+        previewSec.style.display = 'block';
+        previewSec.classList.add('fade-in');
+        document.getElementById('result-box').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('predict-btn').disabled = false;
+        document.getElementById('predict-btn').textContent = 'Classify this image';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetAll() {
+      currentFile = null;
+      fileInput.value = '';
+      dropZone.style.display = 'block';
+      previewSec.style.display = 'none';
+      document.getElementById('result-box').style.display = 'none';
+      document.getElementById('error-msg').style.display = 'none';
+    }
+
+    async function runPrediction() {
+      if (!currentFile) return;
+      const btn = document.getElementById('predict-btn');
+      const spinner = document.getElementById('spinner');
+      const errBox = document.getElementById('error-msg');
+      const resBox = document.getElementById('result-box');
+      btn.disabled = true;
+      btn.textContent = 'Classifying...';
+      spinner.style.display = 'flex';
+      errBox.style.display = 'none';
+      resBox.style.display = 'none';
+      try {
+        const formData = new FormData();
+        formData.append('file', currentFile);
+        const res = await fetch('/predict', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: 'Something went wrong.' }));
+          throw new Error(err.detail || 'HTTP ' + res.status);
+        }
+        showResult(await res.json());
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = 'block';
+      } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = 'Classify again';
+      }
+    }
+
+    function showResult(data) {
+      let topClass, topConf, top3 = [];
+      if (data.top_prediction) {
+        topClass = data.top_prediction.class;
+        topConf = data.top_prediction.confidence;
+        top3 = data.top_3_predictions || [];
+      } else {
+        topClass = data.prediction;
+        topConf = data.confidence;
+        top3 = [{ class: topClass, confidence: topConf }];
+      }
+      document.getElementById('result-class').textContent = topClass;
+      document.getElementById('result-conf').textContent = 'Confidence: ' + (topConf * 100).toFixed(1) + '%';
+      const resBox = document.getElementById('result-box');
+      resBox.style.display = 'block';
+      resBox.classList.add('fade-in');
+      setTimeout(() => { document.getElementById('conf-bar').style.width = (topConf * 100) + '%'; }, 50);
+      const list = document.getElementById('top3-list');
+      list.innerHTML = '';
+      top3.forEach((item, i) => {
+        list.innerHTML += `<div class="top-item"><div class="top-name">${item.class}</div><div class="top-bar-bg"><div class="top-bar-fill rank-${i+1}" id="tbar-${i}"></div></div><div class="top-pct">${(item.confidence * 100).toFixed(1)}%</div></div>`;
+      });
+      setTimeout(() => {
+        top3.forEach((item, i) => { const el = document.getElementById('tbar-' + i); if (el) el.style.width = (item.confidence * 100) + '%'; });
+      }, 80);
+    }
+  </script>
+</body>
+</html>

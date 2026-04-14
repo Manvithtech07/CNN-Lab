@@ -1,1 +1,1 @@
-fastapiuvicorntensorflownumpypillowpython-multipart
+fastapiuvicorntensorflownumpypillowpython-multipartjinja2
